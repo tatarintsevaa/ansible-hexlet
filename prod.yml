@@ -1,0 +1,5 @@
+webservers:
+  hosts:
+    old:
+      ansible_host: 95.163.229.235
+      ansible_user: root
