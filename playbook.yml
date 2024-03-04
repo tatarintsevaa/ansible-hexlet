@@ -1,42 +1,28 @@
-- hosts: webservers
+- hosts: appservers
 
   tasks:
-    - name: update apt
-      ansible.builtin.apt:
-        update_cache: yes
-      become: yes
-      tags: work_apps
-    - name: install git
-      ansible.builtin.apt:
-        name: git
+    - name: install nginx
+      apt:
+        name: nginx
         state: present
         update_cache: yes
       become: yes
-      tags: work_apps
-    - name: install postgresql
-      ansible.builtin.apt:
-        name: postgresql
-        state: present
-        update_cache: yes
+      tags: nginx
+    - name: copy html
+      copy:
+        src: files/index.html
+        dest: /usr/share/nginx/html/index.html
+    - name: update nginx config
+      copy:
+        src: files/nginx.conf
+        dest: /etc/nginx/nginx.conf
+      notify:
+        - restart nginx
       become: yes
-      tags: work_apps
-    - name: Ensure group "dev" exists
-      ansible.builtin.group:
-        name: dev
-        state: present
-      tags: user
-    - name: Add user
-      ansible.builtin.user:
-        name: arya
-        group: dev
-      tags: user
-    - name: Add user
-      ansible.builtin.user:
-        name: sansa
-        group: dev
-      tags: user
-    - name: Add user
-      ansible.builtin.user:
-        name: tirion
-        group: dev
-      tags: user
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: reloaded
+      become: yes

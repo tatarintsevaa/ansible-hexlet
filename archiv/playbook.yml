@@ -1,0 +1,42 @@
+- hosts: webservers
+
+  tasks:
+    - name: update apt
+      ansible.builtin.apt:
+        update_cache: yes
+      become: yes
+      tags: work_apps
+    - name: install git
+      ansible.builtin.apt:
+        name: git
+        state: present
+        update_cache: yes
+      become: yes
+      tags: work_apps
+    - name: install postgresql
+      ansible.builtin.apt:
+        name: postgresql
+        state: present
+        update_cache: yes
+      become: yes
+      tags: work_apps
+    - name: Ensure group "dev" exists
+      ansible.builtin.group:
+        name: dev
+        state: present
+      tags: user
+    - name: Add user
+      ansible.builtin.user:
+        name: arya
+        group: dev
+      tags: user
+    - name: Add user
+      ansible.builtin.user:
+        name: sansa
+        group: dev
+      tags: user
+    - name: Add user
+      ansible.builtin.user:
+        name: tirion
+        group: dev
+      tags: user
