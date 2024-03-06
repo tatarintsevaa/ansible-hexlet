@@ -1,5 +1,8 @@
 - hosts: appservers
 
+  vars:
+    nginx_port: 80
+    root_dir: /etc/nginx
   tasks:
     - name: install nginx
       apt:
@@ -13,9 +16,9 @@
         src: files/index.html
         dest: /usr/share/nginx/html/index.html
     - name: update nginx config
-      copy:
-        src: files/nginx.conf
-        dest: /etc/nginx/nginx.conf
+      template:
+        src: files/nginx.conf.j2
+        dest: "{{root_dir}}/nginx.conf"
       notify:
         - restart nginx
       become: yes
