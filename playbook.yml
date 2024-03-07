@@ -1,4 +1,4 @@
-- hosts: appservers
+- hosts: servers
 
   vars:
     nginx_port: 80
@@ -12,9 +12,12 @@
       become: yes
       tags: nginx
     - name: copy html
-      copy:
+      template:
         src: files/index.html
         dest: /usr/share/nginx/html/index.html
+      notify:
+        - restart nginx
+      become: yes
     - name: update nginx config
       template:
         src: files/nginx.conf.j2
