@@ -1,5 +1,5 @@
 - hosts: servers
-
+  gather_facts: no
   vars:
     nginx_port: 80
     root_dir: /etc/nginx
