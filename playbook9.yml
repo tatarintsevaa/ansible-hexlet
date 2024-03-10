@@ -1,0 +1,51 @@
+- hosts: appservers
+  gather_facts: no
+  vars:
+    users:
+      - name: sansa
+        password: password1
+      - name: jaime
+        password: password2
+      - name: robert
+        password: password3
+  tasks:
+    - name: install git
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Create users
+      user:
+        name: "{{ item.name }}"
+        password: "{{ item.password | password_hash('sha512') }}"
+        shell: /bin/bash
+        create_home: yes
+        groups: sudo
+      with_items: "{{ users }}"
+
+    - name: create ssh dirs
+      file:
+        path: "/home/{{ item.name }}/.ssh"
+        state: directory
+        mode: '0700'
+        owner: "{{ item.name }}"
+      with_items: "{{ users }}"
+
+    - name: update git config
+      template:
+        src: files/gitconfig.j2
+        dest: "/home/{{ item.name }}/.gitconfig"
+      with_items: "{{ users }}"
+      tags: git
+      become: yes
+
+    - name: Copy pub keys
+      copy:
+        src: files/pub-keys/id_ed25519.pub
+        dest: /home/{{ item.name }}/.ssh/authorized_keys
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+      with_items: "{{ users }}"
+      become: yes
