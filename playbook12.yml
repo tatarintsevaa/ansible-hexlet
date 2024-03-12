@@ -1,0 +1,97 @@
+- hosts: webservers
+  vars:
+    users:
+      - name: sansa
+        password: password1
+    nginx_port: 80
+    root_dir: /etc/nginx
+    date: "{{ ansible_date_time['date'] }}"
+    server_name: "{{ansible_distribution}} : {{ansible_default_ipv4['address']}}"
+  tasks:
+    - name: install git
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Create users
+      user:
+        name: "{{ item.name }}"
+        password: "{{ item.password | password_hash('sha512') }}"
+        shell: /bin/bash
+        create_home: yes
+        groups: sudo
+      with_items: "{{ users }}"
+
+    - name: create ssh dirs
+      file:
+        path: "/home/{{ item.name }}/.ssh"
+        state: directory
+        mode: '0700'
+        owner: "{{ item.name }}"
+      with_items: "{{ users }}"
+
+    - name: update git config
+      template:
+        src: files/gitconfig.j2
+        dest: "/home/{{ item.name }}/.gitconfig"
+      with_items: "{{ users }}"
+      tags: git
+      become: yes
+
+    - name: Ensure group "webhook" exists
+      group:
+        name: "{{ item.name }}"
+        state: present
+      with_items: "{{ users }}"
+
+    - name: create ssh dirs
+      file:
+        path: "/home/{{ item.name }}/.ssh"
+        state: directory
+        mode: '0700'
+        owner: "{{ item.name }}"
+      with_items: "{{ users }}"
+
+    - name: Copy pub keys
+      copy:
+        src: files/pub-keys/id_ed25519.pub
+        dest: /home/{{ item.name }}/.ssh/authorized_keys
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+      with_items: "{{ users }}"
+      become: yes
+
+    - name: install nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+      become: yes
+      tags: nginx
+
+    - name: copy html
+      template:
+        src: files/index.html
+        dest: /usr/share/nginx/html/index.html
+      notify:
+        - restart nginx
+      become: yes
+      tags: nginx
+
+    - name: update nginx config
+      template:
+        src: files/nginx.conf.j2
+        dest: "{{root_dir}}/nginx.conf"
+      notify:
+        - restart nginx
+      become: yes
+      tags: nginx
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: reloaded
+      become: yes
