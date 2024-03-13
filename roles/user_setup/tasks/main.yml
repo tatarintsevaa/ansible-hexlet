@@ -1,0 +1,12 @@
+---
+- name: Create a new user
+  user:
+    name: "{{ username }}"
+    state: present
+    create_home: yes
+
+- name: Configure Git for the user
+  template:
+    src: gitconfig.j2
+    dest: "/home/{{ username }}/.gitconfig"
+  when: username is defined

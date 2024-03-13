@@ -1,0 +1,15 @@
+[alias]
+    co = checkout
+    ci = commit
+    st = status
+    br = branch
+    hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+    type = cat-file -t
+    dump = cat-file -p
+    commend = commit --amend
+[core]
+    excludesFile = ~/.gitignore_global
+    editor = nano
+[user]
+    name = {{ git_user_name }}
+    email = {{ git_user_email }}

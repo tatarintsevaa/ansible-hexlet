@@ -1,0 +1,25 @@
+---
+- name: Setup working environment for developers
+  hosts: webservers
+  become: yes
+  vars:
+    # Переменные для роли geerlingguy.postgresql
+    postgresql_databases:
+      - name: exampledb
+    postgresql_users:
+      - name: exampleuser
+        password: supersecurepassword
+
+    # Переменные для роли geerlingguy.php
+    php_version: '8.1'
+
+    # Переменные для настройки окружения пользователя
+    username: devuser
+    git_user_name: 'Dev User'
+    git_user_email: devuser@example.com
+
+  roles:
+    - geerlingguy.git
+    - geerlingguy.postgresql
+    - geerlingguy.php
+    - user_setup
